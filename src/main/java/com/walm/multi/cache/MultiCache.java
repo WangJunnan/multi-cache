@@ -44,6 +44,7 @@ public class MultiCache<V> implements Cache<V>{
         Assert.hasText(key, "key can not be empty");
         Assert.notNull(value, "value can not be null");
         redisCache.put(key, value);
+        // TODO cluster update
         caffeineCache.invalidate(key);
     }
 
@@ -51,6 +52,7 @@ public class MultiCache<V> implements Cache<V>{
     public void invalidate(String key) {
         Assert.hasText(key, "key can not be empty");
         redisCache.invalidate(key);
+        // TODO cluster update
         caffeineCache.invalidate(key);
     }
 
@@ -58,6 +60,7 @@ public class MultiCache<V> implements Cache<V>{
     public void invalidateAll(List<String> keys) {
         Assert.notEmpty(keys, "keys can not be empty");
         redisCache.invalidateAll(keys);
+        // TODO cluster update
         caffeineCache.invalidateAll(keys);
     }
 

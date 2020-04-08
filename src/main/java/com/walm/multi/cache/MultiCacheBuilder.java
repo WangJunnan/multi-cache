@@ -33,13 +33,20 @@ public class MultiCacheBuilder<V> {
      * cacheName
      */
     private String cacheName;
+    private String clusterRedisTopic;
 
     private MultiCacheBuilder(String cacheName) {
         this.cacheName = cacheName;
+        this.clusterRedisTopic = cacheName;
     }
 
     public static MultiCacheBuilder<Object> newBuilder(String cacheName) {
         return new MultiCacheBuilder<>(cacheName);
+    }
+
+    public MultiCacheBuilder<V> clusterRedisTopic(String clusterRedisTopic) {
+        this.clusterRedisTopic = clusterRedisTopic;
+        return this;
     }
 
     public MultiCacheBuilder<V> redisCache(StringRedisTemplate redisTemplate, Long expireTime) {
