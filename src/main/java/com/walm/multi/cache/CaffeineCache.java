@@ -3,6 +3,7 @@ package com.walm.multi.cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -13,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CaffeineCache<V> implements Cache<V> {
 
-    final private LoadingCache<String, V> cache;
+    final private LoadingCache<String, CacheValue<V>> cache;
 
     final private Integer maximumSize;
     final private Long expireTime;
@@ -22,7 +23,7 @@ public class CaffeineCache<V> implements Cache<V> {
     public CaffeineCache(Integer maximumSize,
                          Long expireTime,
                          Long refreshTime,
-                         DataLoader<V> dataLoader) {
+                         DataLoader<CacheValue<V>> dataLoader) {
 
         this.maximumSize = maximumSize;
         this.expireTime = expireTime;
@@ -39,16 +40,21 @@ public class CaffeineCache<V> implements Cache<V> {
 
     @Override
     public V get(String key) {
-        return cache.get(key);
+        return cache.get(key).getValue();
     }
 
     @Override
     public void put(String key, V value) {
-        cache.put(key, value);
+        cache.put(key, new CacheValue());
     }
 
     @Override
     public void invalidate(String key) {
         cache.invalidate(key);
+    }
+
+    @Override
+    public void invalidateAll(List<String> keys) {
+        cache.invalidateAll(keys);
     }
 }

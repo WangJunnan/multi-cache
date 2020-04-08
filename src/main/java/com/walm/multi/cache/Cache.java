@@ -1,5 +1,7 @@
 package com.walm.multi.cache;
 
+import java.util.List;
+
 /**
  * <p>Cache</p>
  *
@@ -28,4 +30,6 @@ public interface Cache<V> {
      * @param key
      */
     void invalidate(String key);
+
+    void invalidateAll(List<String> keys);
 }

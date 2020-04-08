@@ -2,6 +2,7 @@ package com.walm.multi.cache;
 
 import lombok.Data;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.util.Assert;
 
 /**
  * <p>MultiCacheBuilder</p>
@@ -60,10 +61,23 @@ public class MultiCacheBuilder<V> {
     }
 
     public <V1 extends V> Cache<V1> build() {
+        Assert.notNull(valueSerializer, "redis valueSerializer is null");
+        Assert.notNull(redisTemplate, "redis redisTemplate is null");
+        Assert.notNull(redisExpireTime, "redis redisExpireTime is null");
+        Assert.notNull(caffeineExpireTime, "caffeineExpireTime is null");
+        Assert.notNull(caffeineRefreshTime, "caffeineRefreshTime is null");
+        Assert.notNull(caffeineMaxSize, "caffeineMaxSize is null");
         return new MultiCache<>(this);
     }
 
     public <V1 extends V> Cache<V1> build(DataLoader<V1> dataLoader) {
+        Assert.notNull(valueSerializer, "redis valueSerializer is null");
+        Assert.notNull(redisTemplate, "redis redisTemplate is null");
+        Assert.notNull(redisExpireTime, "redis redisExpireTime is null");
+        Assert.notNull(caffeineExpireTime, "caffeineExpireTime is null");
+        Assert.notNull(caffeineRefreshTime, "caffeineRefreshTime is null");
+        Assert.notNull(caffeineMaxSize, "caffeineMaxSize is null");
+        Assert.notNull(dataLoader, "redis dataLoader is null");
         return new MultiCache<>(this, dataLoader);
     }
 }

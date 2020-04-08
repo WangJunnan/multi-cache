@@ -1,7 +1,10 @@
 package com.walm.multi.cache;
 
+import com.google.gson.reflect.TypeToken;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.util.Assert;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -43,9 +46,12 @@ public class RedisCache<V> implements Cache<V> {
                 value = valueSerializer.serialize(newValue);
                 redisTemplate.opsForValue().set(key, value);
                 return newValue;
+            } else {
+                redisTemplate.opsForValue().set(key, Consts.EMPTY_VALUE);
+                return null;
             }
         }
-        if (Objects.isNull(value)) {
+        if (Objects.isNull(value) || Consts.EMPTY_VALUE.equals(value)) {
             return null;
         }
         return valueSerializer.deserialize(value);
@@ -59,5 +65,10 @@ public class RedisCache<V> implements Cache<V> {
     @Override
     public void invalidate(String key) {
         redisTemplate.delete(key);
+    }
+
+    @Override
+    public void invalidateAll(List<String> keys) {
+        redisTemplate.delete(keys);
     }
 }
