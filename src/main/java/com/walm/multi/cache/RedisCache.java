@@ -1,8 +1,7 @@
 package com.walm.multi.cache;
 
-import com.google.gson.reflect.TypeToken;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Objects;
@@ -14,6 +13,7 @@ import java.util.concurrent.TimeUnit;
  * @author wangjn
  * @since 2020-04-03
  */
+@Slf4j
 public class RedisCache<V> implements Cache<V> {
 
     private DataLoader<V> dataLoader;
@@ -31,7 +31,7 @@ public class RedisCache<V> implements Cache<V> {
 
     public RedisCache(StringRedisTemplate redisTemplate,
                       Long expireTime,
-                      ValueSerializer<V> serializer) {
+                      ValueSerializer serializer) {
         this.expireTime = expireTime;
         this.redisTemplate = redisTemplate;
         this.valueSerializer = serializer;
@@ -39,6 +39,7 @@ public class RedisCache<V> implements Cache<V> {
 
     @Override
     public V get(String key) {
+        log.info("multi cache load from redis key = {}", key);
         String value = redisTemplate.opsForValue().get(key);
         if (Objects.isNull(value) && Objects.nonNull(dataLoader)) {
             V newValue = dataLoader.load(key);

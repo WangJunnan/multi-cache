@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,12 +41,16 @@ public class CaffeineCache<V> implements Cache<V> {
 
     @Override
     public V get(String key) {
+        CacheValue<V> cacheValue = cache.get(key);
+        if (Objects.isNull(cacheValue)) {
+            return null;
+        }
         return cache.get(key).getValue();
     }
 
     @Override
     public void put(String key, V value) {
-        cache.put(key, new CacheValue());
+        cache.put(key, new CacheValue<>(value));
     }
 
     @Override
