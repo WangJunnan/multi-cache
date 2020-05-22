@@ -5,7 +5,9 @@ multi-cache 多级缓存基于caffeine和redis，目前支持以下功能
 
 1. 支持本地缓存集群更新
 2. 防缓存穿透
-3. 支持同步load
+3. 支持同步load (local_cache <- remote_cache <- db or rpc..)
+4. 支持查看缓存命中 丢失率
+... 等等 还没加的
 ... 
 
 
