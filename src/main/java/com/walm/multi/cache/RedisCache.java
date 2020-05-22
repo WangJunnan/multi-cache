@@ -91,6 +91,9 @@ public class RedisCache<V> implements Cache<V> {
 
     @Override
     public CacheStats getCacheStats() {
+        if (!recordStats) {
+            return null;
+        }
         long hitCount = cacheStatsCounter.hitCount();
         long missCount = cacheStatsCounter.missCount();
         long totalRequest = hitCount + missCount;
