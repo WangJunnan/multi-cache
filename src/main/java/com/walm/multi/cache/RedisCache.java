@@ -20,27 +20,43 @@ public class RedisCache<V> implements Cache<V> {
     private Long expireTime;
     private StringRedisTemplate redisTemplate;
     private ValueSerializer<V> valueSerializer;
+    private Boolean recordStats;
+    private CacheStatsCounter cacheStatsCounter;
 
     public RedisCache(StringRedisTemplate redisTemplate,
                       Long expireTime,
                       ValueSerializer serializer,
+                      Boolean recordStats,
                       DataLoader<V> dataLoader) {
-        this(redisTemplate, expireTime, serializer);
+        this(redisTemplate, expireTime, serializer, recordStats);
         this.dataLoader = dataLoader;
     }
 
     public RedisCache(StringRedisTemplate redisTemplate,
                       Long expireTime,
-                      ValueSerializer serializer) {
+                      ValueSerializer serializer,
+                      Boolean recordStats) {
         this.expireTime = expireTime;
         this.redisTemplate = redisTemplate;
         this.valueSerializer = serializer;
+        this.recordStats = recordStats;
+        this.cacheStatsCounter = new CacheStatsCounter();
     }
 
     @Override
     public V get(String key) {
         log.info("multi cache load from redis key = {}", key);
         String value = redisTemplate.opsForValue().get(key);
+        // TODO resolve thead safe ?
+        // TODO double check lock ?
+        if (recordStats) {
+            if (value == null) {
+                cacheStatsCounter.incrMissCount();
+            } else {
+                cacheStatsCounter.incrHitCount();
+            }
+        }
+
         if (Objects.isNull(value) && Objects.nonNull(dataLoader)) {
             V newValue = dataLoader.load(key);
             if (Objects.nonNull(newValue)) {
@@ -71,5 +87,19 @@ public class RedisCache<V> implements Cache<V> {
     @Override
     public void invalidateAll(List<String> keys) {
         redisTemplate.delete(keys);
+    }
+
+    @Override
+    public CacheStats getCacheStats() {
+        long hitCount = cacheStatsCounter.hitCount();
+        long missCount = cacheStatsCounter.missCount();
+        long totalRequest = hitCount + missCount;
+        return CacheStats.builder()
+                .cacheType(Consts.CACHE_TYPE_REMOTE)
+                .hitCount(hitCount)
+                .hitRate(totalRequest == 0L ? 0.0D : (double) hitCount / (double) totalRequest)
+                .missCount(missCount)
+                .missRate(totalRequest == 0 ? 0.0D : (double) missCount / (double) totalRequest)
+                .build();
     }
 }

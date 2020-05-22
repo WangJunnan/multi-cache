@@ -20,23 +20,28 @@ public class CaffeineCache<V> implements Cache<V> {
     final private Integer maximumSize;
     final private Long expireTime;
     final private Long refreshTime;
+    final private Boolean recordStats;
 
     public CaffeineCache(Integer maximumSize,
                          Long expireTime,
                          Long refreshTime,
+                         Boolean recordStats,
                          DataLoader<CacheValue<V>> dataLoader) {
 
         this.maximumSize = maximumSize;
         this.expireTime = expireTime;
         this.refreshTime = refreshTime;
+        this.recordStats = recordStats;
 
-        cache = Caffeine.newBuilder()
+        Caffeine<Object, Object> caffeine = Caffeine.newBuilder()
                 .maximumSize(maximumSize)
                 .expireAfterWrite(expireTime, TimeUnit.MILLISECONDS)
-                .refreshAfterWrite(refreshTime, TimeUnit.MILLISECONDS)
-                .build(dataLoader::load);
+                .refreshAfterWrite(refreshTime, TimeUnit.MILLISECONDS);
 
-
+        if (recordStats) {
+            caffeine.recordStats();
+        }
+        cache = caffeine.build(dataLoader::load);
     }
 
     @Override
@@ -61,5 +66,20 @@ public class CaffeineCache<V> implements Cache<V> {
     @Override
     public void invalidateAll(List<String> keys) {
         cache.invalidateAll(keys);
+    }
+
+    @Override
+    public CacheStats getCacheStats() {
+        if (!recordStats) {
+            return null;
+        }
+        com.github.benmanes.caffeine.cache.stats.CacheStats stats = cache.stats();
+        return CacheStats.builder()
+                .cacheType(Consts.CACHE_TYPE_LOCAL)
+                .hitCount(stats.hitCount())
+                .hitRate(stats.hitRate())
+                .missCount(stats.missCount())
+                .missRate(stats.missRate())
+                .build();
     }
 }

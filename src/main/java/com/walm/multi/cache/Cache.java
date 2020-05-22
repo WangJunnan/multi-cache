@@ -32,4 +32,7 @@ public interface Cache<V> {
     void invalidate(String key);
 
     void invalidateAll(List<String> keys);
+
+    CacheStats getCacheStats();
 }
+

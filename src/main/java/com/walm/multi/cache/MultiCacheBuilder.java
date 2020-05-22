@@ -35,6 +35,8 @@ public class MultiCacheBuilder<V> {
     private String cacheName;
     private String clusterRedisTopic;
 
+    private Boolean recordStats = false;
+
     private MultiCacheBuilder(String cacheName) {
         this.cacheName = cacheName;
         this.clusterRedisTopic = cacheName;
@@ -46,6 +48,11 @@ public class MultiCacheBuilder<V> {
 
     public MultiCacheBuilder<V> clusterRedisTopic(String clusterRedisTopic) {
         this.clusterRedisTopic = clusterRedisTopic;
+        return this;
+    }
+
+    public MultiCacheBuilder<V> recordStats() {
+        this.recordStats = true;
         return this;
     }
 

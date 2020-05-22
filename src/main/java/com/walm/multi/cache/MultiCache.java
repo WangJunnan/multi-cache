@@ -4,6 +4,7 @@ import com.walm.multi.cache.cluster.ClusterMqInvoke;
 import lombok.Getter;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -28,14 +29,14 @@ public class MultiCache<V> implements Cache<V>{
 
     public MultiCache(MultiCacheBuilder<? super V> builder, DataLoader<V> dataLoader) {
         this.dataLoader = dataLoader;
-        this.redisCache = new RedisCache<>(builder.getRedisTemplate(), builder.getRedisExpireTime(), builder.getValueSerializer(), this.dataLoader);
-        this.caffeineCache = new CaffeineCache<>(builder.getCaffeineMaxSize(), builder.getCaffeineExpireTime(), builder.getCaffeineRefreshTime(), this::loadFromRedis);
+        this.redisCache = new RedisCache<>(builder.getRedisTemplate(), builder.getRedisExpireTime(), builder.getValueSerializer(), builder.getRecordStats(), this.dataLoader);
+        this.caffeineCache = new CaffeineCache<>(builder.getCaffeineMaxSize(), builder.getCaffeineExpireTime(), builder.getCaffeineRefreshTime(), builder.getRecordStats(), this::loadFromRedis);
         this.clusterMqInvoke = new ClusterMqInvoke<>(builder.getRedisTemplate(), builder.getClusterRedisTopic(), this);
     }
 
     public MultiCache(MultiCacheBuilder<? super V> builder) {
-        this.redisCache = new RedisCache<>(builder.getRedisTemplate(), builder.getRedisExpireTime(), builder.getValueSerializer());
-        this.caffeineCache = new CaffeineCache<>(builder.getCaffeineMaxSize(), builder.getCaffeineExpireTime(), builder.getCaffeineRefreshTime(), this::loadFromRedis);
+        this.redisCache = new RedisCache<>(builder.getRedisTemplate(), builder.getRedisExpireTime(), builder.getValueSerializer(), builder.getRecordStats());
+        this.caffeineCache = new CaffeineCache<>(builder.getCaffeineMaxSize(), builder.getCaffeineExpireTime(), builder.getCaffeineRefreshTime(), builder.getRecordStats(), this::loadFromRedis);
         this.clusterMqInvoke = new ClusterMqInvoke<>(builder.getRedisTemplate(), builder.getClusterRedisTopic(), this);
     }
 
@@ -69,6 +70,18 @@ public class MultiCache<V> implements Cache<V>{
         redisCache.invalidateAll(keys);
         caffeineCache.invalidateAll(keys);
         clusterMqInvoke.sendDel(keys);
+    }
+
+    @Override
+    public CacheStats getCacheStats() {
+        return null;
+    }
+
+    public List<CacheStats> getSubCacheStats() {
+        List<CacheStats> subCacheStats = new ArrayList<>(2);
+        subCacheStats.add(caffeineCache.getCacheStats());
+        subCacheStats.add(redisCache.getCacheStats());
+        return subCacheStats;
     }
 
     public CacheValue<V> loadFromRedis(String key) {

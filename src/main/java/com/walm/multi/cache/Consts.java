@@ -22,4 +22,7 @@ public class Consts {
      * 本地缓存集群更新
      */
     public static final int CLUSTER_UPDATE = 1;
+
+    public static final String CACHE_TYPE_LOCAL = "LOCAL";
+    public static final String CACHE_TYPE_REMOTE = "REMOTE";
 }
