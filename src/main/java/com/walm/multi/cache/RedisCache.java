@@ -61,10 +61,10 @@ public class RedisCache<V> implements Cache<V> {
             V newValue = dataLoader.load(key);
             if (Objects.nonNull(newValue)) {
                 value = valueSerializer.serialize(newValue);
-                redisTemplate.opsForValue().set(key, value);
+                redisTemplate.opsForValue().set(key, value, expireTime, TimeUnit.MILLISECONDS);
                 return newValue;
             } else {
-                redisTemplate.opsForValue().set(key, Consts.EMPTY_VALUE);
+                redisTemplate.opsForValue().set(key, Consts.EMPTY_VALUE, expireTime, TimeUnit.MILLISECONDS);
                 return null;
             }
         }
